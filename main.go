@@ -4,10 +4,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"go-sample-site/version"
 )
 
 func myHandler(w http.ResponseWriter, _ *http.Request) {
-	_, _ = fmt.Fprintf(w, "Hello World\n")
+	_, _ = fmt.Fprintf(
+		w,
+		"Version:\t%s\nBuild Number:\t%s\nGit Commit:\t%s",
+		version.Version, version.BuildNumber, version.GitCommit,
+		)
 }
 
 func main() {

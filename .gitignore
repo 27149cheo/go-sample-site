@@ -1,0 +1,45 @@
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Folders
+# add vendor to source control
+#/vendor
+
+.idea
+.DS_Store
+bin
+.cache
+gin-bin
+.vendor-new
+
+# Files
+*.tar.gz
+*.dat
+*.local.*
+*.out
+
+node_modules
+bower_components
+
+npm-debug.log
+.bowerrc
+/.editorconfig
+.jshintrc
+
+.sass-cache/
+.tmp/
+dist/
+.cover
+.scannerwork/
+coverage.html
+temp_coverage_test.go
+
+# VS Code IDE
+.vscode
+docker/*.tar.gz
+*.patch
+main
+
+test/integration/reporters/*.xml

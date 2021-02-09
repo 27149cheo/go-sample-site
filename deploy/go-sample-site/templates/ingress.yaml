@@ -1,0 +1,16 @@
+{{- $fullName := include "go-sample-site.fullname" . -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "go-sample-site.labels" . | nindent 4 }}
+spec:
+  rules:
+    - host: "{{ .Values.env }}-{{ $fullName }}.app.8slan.com"
+      http:
+        paths:
+          - backend:
+              serviceName: {{ $fullName }}
+              servicePort: {{ .Values.service.port }}
+            path: /

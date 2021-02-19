@@ -5,6 +5,10 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "go-sample-site.labels" . | nindent 4 }}
+  {{- if .Values.ingressClassName }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingressClassName }}
+  {{- end }}
 spec:
   rules:
     - host: "{{ .Values.env }}-{{ $fullName }}.app.8slan.com"

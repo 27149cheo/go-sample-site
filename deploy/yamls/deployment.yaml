@@ -14,6 +14,8 @@ spec:
       labels:
         app: web
     spec:
+      imagePullSecrets:
+        - name: default-candidate-registry-secret
       containers:
         - name: web
           image: ccr.ccs.tencentyun.com/trial/go-sample-site:0.1.0

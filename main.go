@@ -1,22 +1,31 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
-	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"go-sample-site/version"
+	"go-sample-site/pkg/server"
 )
 
-func myHandler(w http.ResponseWriter, _ *http.Request) {
-	_, _ = fmt.Fprintf(
-		w,
-		"Version:\t%s\nBuild Number:\t%s\nGit Commit:\t%s",
-		version.Version, version.BuildNumber, version.GitCommit,
-		)
-}
-
 func main() {
-	http.HandleFunc("/", myHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	ctx, cancel := context.WithCancel(context.Background())
+
+	signals := make(chan os.Signal, 1)
+	defer close(signals)
+
+	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
+	go func() {
+		select {
+		case <-signals:
+			signal.Stop(signals)
+			cancel()
+		}
+	}()
+
+	if err := server.Serve(ctx); err != nil {
+		log.Fatal(err)
+	}
 }

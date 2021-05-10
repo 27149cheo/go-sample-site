@@ -17,6 +17,7 @@ limitations under the License.
 package rest
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -24,6 +25,7 @@ import (
 	"go-sample-site/pkg/log"
 	ginmiddleware "go-sample-site/pkg/middleware/gin"
 	"go-sample-site/pkg/util/ginzap"
+	"go-sample-site/version"
 )
 
 type engine struct {
@@ -73,7 +75,11 @@ func (s *engine) injectRouters() {
 	apiRouters.GET("", func(c *gin.Context) {
 		ginzap.WithContext(c).Debug("测试日志")
 		time.Sleep(time.Millisecond)
-		c.JSON(200, gin.H{"message": "success"})
+
+		c.String(200, fmt.Sprintf(
+			"Version:\t%s\nBuild Number:\t%s\nGit Commit:\t%s",
+			version.Version, version.BuildNumber, version.GitCommit,
+		))
 	})
 
 	s.Engine = g

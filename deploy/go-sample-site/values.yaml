@@ -9,7 +9,7 @@ ingressClassName: koderover-admin-nginx
 image:
   repository: ccr.ccs.tencentyun.com/trial/go-sample-site
   pullPolicy: IfNotPresent
-  tag: "0.1.0"
+  tag: "0.2.1"
 
 imagePullSecrets:
   - name: default-candidate-registry-secret

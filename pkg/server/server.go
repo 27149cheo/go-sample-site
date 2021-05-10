@@ -18,15 +18,17 @@ package server
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"time"
 
+	"go-sample-site/pkg/log"
 	"go-sample-site/pkg/server/rest"
 
 )
 
 func Serve(ctx context.Context) error {
+
+	log.Init(&log.Config{Level: "debug", Filename: "/tmp/loutest.log", SendToFile: true})
 	engine := rest.NewEngine()
 	server := &http.Server{Addr: ":25000", Handler: engine}
 
@@ -37,12 +39,12 @@ func Serve(ctx context.Context) error {
 		defer cancel()
 
 		if err := server.Shutdown(ctx); err != nil {
-			log.Printf("Failed to stop server, error: %s\n", err)
+			log.Infof("Failed to stop server, error: %s\n", err)
 		}
 	}()
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Printf("Failed to start http server, error: %s\n", err)
+		log.Infof("Failed to start http server, error: %s\n", err)
 		return err
 	}
 

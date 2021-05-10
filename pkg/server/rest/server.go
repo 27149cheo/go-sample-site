@@ -18,9 +18,12 @@ package rest
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go-sample-site/pkg/log"
+	ginmiddleware "go-sample-site/pkg/middleware/gin"
+	"go-sample-site/pkg/util/ginzap"
 )
 
 type engine struct {
@@ -41,16 +44,18 @@ func NewEngine() *engine {
 }
 
 func (s *engine) injectMiddlewares() {
+	g := gin.New()
+	defer func() {
+		s.Engine = g
+	}()
+
 	if s.mode == gin.TestMode {
-		s.Engine = gin.New()
 		return
 	}
 
-	if s.Engine == nil {
-		s.Engine = gin.Default()
-	}
-
-	// TODO: LOU: add middlewares that apply to all APIs exposed by the server.
+	g.Use(ginmiddleware.RequestLog(log.NewFileLogger("/tmp/requests.log")))
+	g.Use(gin.Recovery())
+	g.Use(ginmiddleware.RequestID())
 }
 
 func (s *engine) injectRouters() {
@@ -65,9 +70,12 @@ func (s *engine) injectRouters() {
 	})
 
 	apiRouters := g.Group("")
-	apiRouters.GET("", func(ctx *gin.Context) {
-		log.WithContext(ctx).Debug("测试日志")
+	apiRouters.GET("", func(c *gin.Context) {
+		ginzap.WithContext(c).Debug("测试日志")
+		time.Sleep(time.Millisecond)
+		c.JSON(200, gin.H{"message": "success"})
 	})
 
 	s.Engine = g
 }
+

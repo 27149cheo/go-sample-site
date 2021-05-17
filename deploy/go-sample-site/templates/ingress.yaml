@@ -2,7 +2,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
+  name: {{ .Release.Name }}
   labels:
     {{- include "go-sample-site.labels" . | nindent 4 }}
   {{- if .Values.ingressClassName }}

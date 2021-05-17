@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     {{- include "go-sample-site.labels" . | nindent 4 }}
-  name: {{ include "go-sample-site.fullname" . }}
+  name: {{ .Release.Name }}
 spec:
   ports:
     - port: {{ .Values.service.port }}

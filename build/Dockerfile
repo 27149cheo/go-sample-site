@@ -1,4 +1,4 @@
-FROM golang:1.16.0
+FROM golang:1.16.5
 
 ENV GOPROXY=https://goproxy.io,direct
 WORKDIR /build

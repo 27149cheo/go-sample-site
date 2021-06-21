@@ -2,6 +2,6 @@ package version
 
 var (
 	Version     = "0.2.3"
-	BuildNumber = "7"
+	BuildNumber = "8"
 	GitCommit   = ""
 )

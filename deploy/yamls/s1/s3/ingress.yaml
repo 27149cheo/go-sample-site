@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: go-sample-site
+spec:
+  rules:
+    - host: $EnvName$-go-sample-site.app.8slan.com
+      http:
+        paths:
+          - backend:
+              serviceName: go-sample-site
+              servicePort: 8080
+            path: /

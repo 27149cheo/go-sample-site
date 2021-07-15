@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-sample-site
+  labels:
+    app: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      imagePullSecrets:
+        - name: default-candidate-registry-secret
+      containers:
+        - name: web
+          image: ccr.ccs.tencentyun.com/trial/go-sample-site:0.1.0
+          ports:
+            - containerPort: 8080

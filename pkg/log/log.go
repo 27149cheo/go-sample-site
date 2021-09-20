@@ -9,14 +9,18 @@ import (
 )
 
 var logger *zap.Logger
+var simpleLogger *zap.SugaredLogger
 
 type Config struct {
-	Level      string
-	SendToFile bool
-	Filename   string
-	MaxSize    int // megabytes
-	MaxAge     int // days
-	MaxBackups int
+	Level       string
+	SendToFile  bool
+	Filename    string
+	NoCaller    bool
+	NoLogLevel  bool
+	Development bool
+	MaxSize     int // megabytes
+	MaxAge      int // days
+	MaxBackups  int
 }
 
 func Init(cfg *Config) {
@@ -27,39 +31,50 @@ func Init(cfg *Config) {
 	}
 
 	consoleSyncer := zapcore.AddSync(os.Stdout)
-	consoleEncoder := getConsoleEncoder()
+	consoleEncoder := getConsoleEncoder(cfg)
 	consoleCore := zapcore.NewCore(consoleEncoder, consoleSyncer, l)
 
 	var opts []zap.Option
-	opts = append(opts, zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel), zap.Development())
+	opts = append(opts, zap.AddStacktrace(zap.DPanicLevel))
+	if !cfg.NoCaller {
+		opts = append(opts, zap.AddCaller())
+	}
+	if cfg.Development {
+		opts = append(opts, zap.Development())
+	}
 
 	core := consoleCore
 	if cfg.SendToFile {
 		fileSyncer := getLogWriter(cfg.Filename, cfg.MaxSize, cfg.MaxBackups, cfg.MaxAge)
-		fileEncoder := getJSONEncoder()
+		fileEncoder := getJSONEncoder(cfg)
 		fileCore := zapcore.NewCore(fileEncoder, fileSyncer, l)
 
 		core = zapcore.NewTee(consoleCore, fileCore)
 	}
 
 	logger = zap.New(core, opts...)
+	simpleLogger = logger.WithOptions(zap.AddCallerSkip(1)).Sugar()
 }
 
-func getJSONEncoder() zapcore.Encoder {
-	return getEncoder(true)
+func getJSONEncoder(cfg *Config) zapcore.Encoder {
+	return getEncoder(cfg, true)
 }
 
-func getConsoleEncoder() zapcore.Encoder {
-	return getEncoder(false)
+func getConsoleEncoder(cfg *Config) zapcore.Encoder {
+	return getEncoder(cfg, false)
 }
 
-func getEncoder(jsonFormat bool) zapcore.Encoder {
+func getEncoder(cfg *Config, jsonFormat bool) zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.TimeKey = "time"
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 	encoderConfig.EncodeDuration = zapcore.StringDurationEncoder
 	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+
+	if cfg.NoLogLevel {
+		encoderConfig.LevelKey = zapcore.OmitKey
+	}
 
 	if jsonFormat {
 		return zapcore.NewJSONEncoder(encoderConfig)
@@ -70,13 +85,17 @@ func getEncoder(jsonFormat bool) zapcore.Encoder {
 
 func getLogWriter(filename string, maxSize, maxBackup, maxAge int) zapcore.WriteSyncer {
 	lumberJackLogger := &lumberjack.Logger{
-		Filename:   filename,
-		MaxSize:    maxSize,
-		MaxBackups: maxBackup,
-		MaxAge:     maxAge,
+		Filename: filename,
+		// MaxSize:    maxSize,
+		// MaxBackups: maxBackup,
+		// MaxAge:     maxAge,
 	}
 
 	return zapcore.AddSync(lumberJackLogger)
+}
+
+func NopSugaredLogger() *zap.SugaredLogger {
+	return zap.NewNop().Sugar()
 }
 
 func Logger() *zap.Logger {
@@ -84,13 +103,14 @@ func Logger() *zap.Logger {
 }
 
 func SugaredLogger() *zap.SugaredLogger {
-	return getLogger().Sugar()
+	return getSugaredLogger()
 }
 
 func getLogger() *zap.Logger {
 	if logger == nil {
 		panic("Logger is not initialized yet!")
 	}
+
 	return logger
 }
 
@@ -98,9 +118,17 @@ func getSugaredLogger() *zap.SugaredLogger {
 	return getLogger().Sugar()
 }
 
+func getSimpleLogger() *zap.SugaredLogger {
+	if simpleLogger == nil {
+		panic("Logger is not initialized yet!")
+	}
+
+	return simpleLogger
+}
+
 func NewFileLogger(path string) *zap.Logger {
 	fileSyncer := getLogWriter(path, 0, 0, 0)
-	fileEncoder := getJSONEncoder()
+	fileEncoder := getJSONEncoder(&Config{})
 	fileCore := zapcore.NewCore(fileEncoder, fileSyncer, zap.DebugLevel)
 	return zap.New(fileCore)
 }
@@ -109,34 +137,66 @@ func With(fields ...zap.Field) *zap.Logger {
 	return getLogger().With(fields...)
 }
 
-func Info(msg string) {
-	getSugaredLogger().Info(msg)
+func Debug(args ...interface{}) {
+	getSimpleLogger().Debug(args...)
 }
 
-func Infof(format string, a ...interface{}) {
-	getSugaredLogger().Infof(format, a...)
+func Debugf(format string, args ...interface{}) {
+	getSimpleLogger().Debugf(format, args...)
 }
 
-func Warning(msg string) {
-	getSugaredLogger().Warn(msg)
+func Info(args ...interface{}) {
+	getSimpleLogger().Info(args...)
 }
 
-func Warningf(format string, a ...interface{}) {
-	getSugaredLogger().Warnf(format, a...)
+func Infof(format string, args ...interface{}) {
+	getSimpleLogger().Infof(format, args...)
 }
 
-func Error(msg string) {
-	getSugaredLogger().Error(msg)
+func Warning(args ...interface{}) {
+	getSimpleLogger().Warn(args...)
 }
 
-func Errorf(format string, a ...interface{}) {
-	getSugaredLogger().Errorf(format, a...)
+func Warningf(format string, args ...interface{}) {
+	getSimpleLogger().Warnf(format, args...)
 }
 
-func Fatal(msg string) {
-	getSugaredLogger().Fatal(msg)
+func Warn(args ...interface{}) {
+	getSimpleLogger().Warn(args...)
 }
 
-func Fatalf(format string, a ...interface{}) {
-	getSugaredLogger().Fatalf(format, a...)
+func Warnf(format string, args ...interface{}) {
+	getSimpleLogger().Warnf(format, args...)
+}
+
+func Error(args ...interface{}) {
+	getSimpleLogger().Error(args...)
+}
+
+func Errorf(format string, args ...interface{}) {
+	getSimpleLogger().Errorf(format, args...)
+}
+
+func DPanic(args ...interface{}) {
+	getSimpleLogger().DPanic(args...)
+}
+
+func DPanicf(format string, args ...interface{}) {
+	getSimpleLogger().DPanicf(format, args...)
+}
+
+func Panic(args ...interface{}) {
+	getSimpleLogger().Panic(args...)
+}
+
+func Panicf(format string, args ...interface{}) {
+	getSimpleLogger().Panicf(format, args...)
+}
+
+func Fatal(args ...interface{}) {
+	getSimpleLogger().Fatal(args...)
+}
+
+func Fatalf(format string, args ...interface{}) {
+	getSimpleLogger().Fatalf(format, args...)
 }

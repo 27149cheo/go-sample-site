@@ -30,7 +30,7 @@ func Serve(ctx context.Context) error {
 
 	log.Init(&log.Config{Level: "debug", Filename: "/tmp/loutest.log", SendToFile: true})
 	engine := rest.NewEngine()
-	server := &http.Server{Addr: ":25000", Handler: engine}
+	server := &http.Server{Addr: ":8080", Handler: engine}
 
 	go func() {
 		<-ctx.Done()

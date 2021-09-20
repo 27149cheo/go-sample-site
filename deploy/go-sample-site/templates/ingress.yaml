@@ -1,5 +1,5 @@
 {{- $fullName := include "go-sample-site.fullname" . -}}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Release.Name }}
@@ -11,10 +11,13 @@ metadata:
   {{- end }}
 spec:
   rules:
-    - host: "{{ .Values.env }}-{{ $fullName }}.app.8slan.com"
+    - host: "{{ .Values.env }}-{{ $fullName }}.test.8slan.com"
       http:
         paths:
           - backend:
-              serviceName: {{ $fullName }}
-              servicePort: {{ .Values.service.port }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ .Values.service.port }}
             path: /
+            pathType: ImplementationSpecific

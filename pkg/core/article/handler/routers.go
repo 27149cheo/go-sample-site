@@ -9,7 +9,7 @@ import (
 type Router struct{}
 
 func (*Router) Inject(router *gin.RouterGroup) {
-	root := router.Group("")
+	root := router.Group("articles")
 	{
 		root.GET("", func(c *gin.Context) {
 			c.JSON(200, core.FakeResponse(c))

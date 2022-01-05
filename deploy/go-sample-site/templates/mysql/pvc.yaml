@@ -1,0 +1,15 @@
+{{- if .Values.mysql.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-mysql
+  labels:
+    {{- include "go-sample-site.component.mysql.labels" . | nindent 4 }}
+spec:
+  storageClassName: {{ .Values.mysql.persistence.storageClass }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.mysql.persistence.size }}
+{{- end }}

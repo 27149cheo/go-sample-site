@@ -20,20 +20,16 @@ func (s *engine) injectRouterGroup(router *gin.RouterGroup) {
 			))
 		})
 		router.GET("version", func(c *gin.Context) {
-			c.JSON(200, map[string]interface{}{
-				"version": version.Version,
-				"buildNumber": version.BuildNumber,
-				"gitCommit": version.GitCommit,
-			})
+			c.JSON(200, version.Get())
 		})
 	}
 
-	for name, r := range map[string]injector{
-		"/api/users":     new(userhandler.Router),
-		"/api/authors":     new(authorhandler.Router),
-		"/api/articles":     new(articlehandler.Router),
+	for _, r := range []injector{
+		new(userhandler.Router),
+		new(authorhandler.Router),
+		new(articlehandler.Router),
 	} {
-		r.Inject(router.Group(name))
+		r.Inject(router.Group("/api/v1"))
 	}
 }
 

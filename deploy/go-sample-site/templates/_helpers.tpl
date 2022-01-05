@@ -60,3 +60,23 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+=====================================================
+=            MYSQL SETTINGS            =
+=====================================================
+*/}}
+
+{{- define "go-sample-site.component.mysql.labels" -}}
+app.kubernetes.io/component: mysql
+{{ include "go-sample-site.labels" . }}
+{{- end }}
+
+{{- define "go-sample-site.component.mysql.selectorLabels" -}}
+app.kubernetes.io/component: mysql
+{{ include "go-sample-site.selectorLabels" . }}
+{{- end }}
+
+{{- define "go-sample-site.component.mysql.serviceName" -}}
+{{ .Release.Name }}-mysql
+{{- end }}

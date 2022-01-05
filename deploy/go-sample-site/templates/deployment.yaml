@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "go-sample-site.selectorLabels" . | nindent 8 }}
+        {{- include "go-sample-site.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -21,6 +21,9 @@ spec:
       containers:
         - name: go-sample-site
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+          env:
+            - name: MYSQL_HOST
+              value: {{ include "go-sample-site.component.mysql.serviceName" . }}:3306
           ports:
             - containerPort: {{ .Values.service.port }}

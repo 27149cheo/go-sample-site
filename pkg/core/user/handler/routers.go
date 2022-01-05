@@ -1,33 +1,17 @@
 package handler
 
 import (
-	"go-sample-site/pkg/core"
-
 	"github.com/gin-gonic/gin"
 )
 
 type Router struct{}
 
 func (*Router) Inject(router *gin.RouterGroup) {
-	user := router.Group("")
+	connector := router.Group("users")
 	{
-		user.GET("", func(c *gin.Context) {
-			c.JSON(200, core.FakeResponse(c))
-		})
-		user.POST("", func(c *gin.Context) {
-			c.JSON(200, core.FakeResponse(c))
-		})
-		user.GET(":name", func(c *gin.Context) {
-			c.JSON(200, core.FakeResponse(c))
-		})
-		user.PUT(":name", func(c *gin.Context) {
-			c.JSON(200, core.FakeResponse(c))
-		})
-		user.PATCH(":name", func(c *gin.Context) {
-			c.JSON(200, core.FakeResponse(c))
-		})
-		user.DELETE(":name", func(c *gin.Context) {
-			c.JSON(200, core.FakeResponse(c))
-		})
+		connector.POST("", CreateUser)
+		connector.GET("", ListUsers)
+		connector.GET("/:id", GetUser)
+		connector.DELETE("/:id", DeleteUser)
 	}
 }
